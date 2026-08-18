@@ -1,0 +1,99 @@
+@import url("/fonts/fontshare/fonts.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #141310;
+  --bg-elev: #1c1a16;
+  --bg-soft: #242119;
+  --line: #3a342b;
+  --text: #f3ead8;
+  --muted: #b3a48c;
+  --accent: #e2b657;
+  --accent-2: #c89a3a;
+  --danger: #e0705c;
+  --ok: #7dba7a;
+  --warn: #e0b35c;
+  --focus: #e2b657;
+  --ring-offset: #141310;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --bg: #f6f1e6;
+  --bg-elev: #fffaf0;
+  --bg-soft: #efe6d4;
+  --line: #d7ccb6;
+  --text: #1c1812;
+  --muted: #6b6154;
+  --accent: #9a7420;
+  --accent-2: #7a5b16;
+  --danger: #b14232;
+  --ok: #2f7a3d;
+  --warn: #9a7420;
+  --focus: #9a7420;
+  --ring-offset: #f6f1e6;
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Satoshi, system-ui, sans-serif;
+  min-height: 100%;
+}
+
+.display {
+  font-family: "Clash Display", Satoshi, system-ui, sans-serif;
+}
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    backdrop-filter: none !important;
+    background: var(--bg-elev) !important;
+  }
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 80;
+  background: var(--accent);
+  color: #1c1812;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+}
+
+.skip:focus {
+  top: 1rem;
+}

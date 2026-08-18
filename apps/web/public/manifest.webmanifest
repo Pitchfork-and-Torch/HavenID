@@ -1,0 +1,16 @@
+{
+  "name": "HavenID",
+  "short_name": "HavenID",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#141310",
+  "theme_color": "#141310",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
