@@ -1,0 +1,119 @@
+# HavenID production-shaped stack.
+# Local: copy .env.example to .env then: docker compose up --build
+# Dev without Caddy TLS: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+name: havenid
+
+services:
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      HAVEN_DOMAIN: ${HAVEN_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    networks:
+      - haven
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://haven:haven@postgres:5432/havenid
+      REDIS_URL: redis://redis:6379/0
+      RECORDINGS_DIR: /data/recordings
+    volumes:
+      - recordings:/data/recordings
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 25s
+    mem_limit: 512m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - haven
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HAVEN_API_ORIGIN: http://api:8000
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+    mem_limit: 768m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - haven
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: haven
+      POSTGRES_PASSWORD: haven
+      POSTGRES_DB: havenid
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U haven -d havenid"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    mem_limit: 384m
+    networks:
+      - haven
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redisdata:/data
+    mem_limit: 128m
+    networks:
+      - haven
+
+volumes:
+  pgdata:
+  redisdata:
+  recordings:
+  caddy_data:
+  caddy_config:
+
+networks:
+  haven:
+    driver: bridge

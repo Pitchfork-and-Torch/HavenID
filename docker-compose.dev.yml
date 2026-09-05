@@ -1,0 +1,17 @@
+# Overlay: bind HTTP on localhost for PC Docker Desktop (no public TLS).
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+services:
+  caddy:
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
+
+  api:
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  web:
+    ports:
+      - "127.0.0.1:3000:3000"
